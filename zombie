@@ -1,0 +1,71 @@
+// Zombie Survival Game - Basic Setup
+
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+import { motion } from 'framer-motion';
+
+const socket = io('http://localhost:3001'); // Kết nối đến server (cần chạy server riêng)
+
+const Game = () => {
+    const [players, setPlayers] = useState({});
+    const [bullets, setBullets] = useState([]);
+    const [zombies, setZombies] = useState([]);
+    const [chat, setChat] = useState([]);
+    const [message, setMessage] = useState('');
+    
+    useEffect(() => {
+        socket.on('updatePlayers', (serverPlayers) => {
+            setPlayers(serverPlayers);
+        });
+        socket.on('spawnZombies', (serverZombies) => {
+            setZombies(serverZombies);
+        });
+        socket.on('chatMessage', (msg) => {
+            setChat((prevChat) => [...prevChat, msg]);
+        });
+    }, []);
+
+    const sendMessage = () => {
+        socket.emit('sendMessage', message);
+        setMessage('');
+    };
+
+    return (
+        <div className="game-container">
+            <h1>Zombie Survival Game</h1>
+            <div className="game-area">
+                {Object.values(players).map((player, index) => (
+                    <motion.div key={index} className="player" animate={{ x: player.x, y: player.y }}>
+                        🏃‍♂️
+                    </motion.div>
+                ))}
+                {zombies.map((zombie, index) => (
+                    <motion.div key={index} className="zombie" animate={{ x: zombie.x, y: zombie.y }}>
+                        🧟
+                    </motion.div>
+                ))}
+            </div>
+            <div className="chat-box">
+                {chat.map((msg, index) => (
+                    <p key={index}>{msg}</p>
+                ))}
+                <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} />
+                <button onClick={sendMessage}>Send</button>
+            </div>
+        </div>
+    );
+};
+
+export default Game;
+\
+
+
+
+
+
+
+
+
+
+
+
